@@ -7,12 +7,16 @@ import java.awt.Dimension;
 
 public class MainWindow extends JFrame {
 
+    private final int Width = 1000;
+    private final int Height = 700;
+
     private final SimulationPanel SimulationPanel = new SimulationPanel();
 
     public MainWindow() {
         setTitle("Steering Behaviours");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 700);
+
+        setSize(Width, Height);
         setMinimumSize(new Dimension(600, 400));
         setLocationRelativeTo(null);
 
