@@ -1,28 +1,20 @@
-
 package agent;
 
 public class Arrow {
 
-    private double PositionX;
-    private double PositionY;
-    private double VelocityX;
-    private double VelocityY;
+    // Configurações iniciais
+    private final double InitialPositionX = 500;
+    private final double InitialPositionY = 350;
+    private final double InitialVelocityX = 150;
+    private final double InitialVelocityY = 0;
 
-    private final double InitialPositionX;
-    private final double InitialPositionY;
-    private final double InitialVelocityX;
-    private final double InitialVelocityY;
+    // Estado atual da flecha
+    private double PositionX = InitialPositionX;
+    private double PositionY = InitialPositionY;
+    private double VelocityX = InitialVelocityX;
+    private double VelocityY = InitialVelocityY;
 
-    public Arrow(double PositionX, double PositionY, double VelocityX, double VelocityY) {
-        this.PositionX = PositionX;
-        this.PositionY = PositionY;
-        this.VelocityX = VelocityX;
-        this.VelocityY = VelocityY;
-
-        InitialPositionX = PositionX;
-        InitialPositionY = PositionY;
-        InitialVelocityX = VelocityX;
-        InitialVelocityY = VelocityY;
+    public Arrow() {
     }
 
     public double GetPositionX() {

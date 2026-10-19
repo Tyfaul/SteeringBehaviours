@@ -15,9 +15,13 @@ import java.awt.event.KeyEvent;
 
 public class MainWindow extends JFrame {
 
+    // Configurações da janela
     private final int Width = 1000;
     private final int Height = 700;
+    private final int MinimumWidth = 600;
+    private final int MinimumHeight = 400;
 
+    // Elementos da interface
     private final SimulationPanel SimulationPanel = new SimulationPanel();
     private final JButton ResetButton = new JButton("Reset");
 
@@ -26,7 +30,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setSize(Width, Height);
-        setMinimumSize(new Dimension(600, 400));
+        setMinimumSize(new Dimension(MinimumWidth, MinimumHeight));
         setLocationRelativeTo(null);
 
         setLayout(new BorderLayout());

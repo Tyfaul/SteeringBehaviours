@@ -11,10 +11,22 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
+import java.awt.BasicStroke;
 
 public class ObjectPanel extends JPanel {
+    // Configurações da flecha
+    private Color ArrowColor = Color.RED;
+    private int ArrowSize = 24;
 
-    private final Arrow Arrow = new Arrow(500, 350, 150, 0);
+    // Configurações do rastro
+    private Color TrailColor = Color.ORANGE;
+    private float TrailThickness = 2.0f;
+
+    // Configurações da atualização
+    private final int UpdateInterval = 16;
+
+    // Objetos e dados da simulação
+    private final Arrow Arrow = new Arrow();
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
     private long LastUpdateTime;
@@ -24,7 +36,7 @@ public class ObjectPanel extends JPanel {
 
         LastUpdateTime = System.nanoTime();
 
-        Timer Timer = new Timer(16, Event -> {
+        Timer Timer = new Timer(UpdateInterval, Event -> {
             long CurrentTime = System.nanoTime();
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
@@ -64,7 +76,8 @@ public class ObjectPanel extends JPanel {
         );
 
         // Desenha o rastro.
-        G2.setColor(Color.RED);
+        G2.setColor(TrailColor);
+        G2.setStroke(new BasicStroke(TrailThickness));
 
         for (int i = 1; i < TrailPoints.size(); i++) {
             Point PreviousPoint = TrailPoints.get(i - 1);
@@ -92,7 +105,7 @@ public class ObjectPanel extends JPanel {
 
         G2.rotate(Angle);
 
-        int ArrowSize = 24;
+        G2.setColor(ArrowColor);
 
         int[] PointsX = {
                 -ArrowSize,

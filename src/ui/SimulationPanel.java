@@ -6,11 +6,16 @@ import java.awt.Dimension;
 
 public class SimulationPanel extends JLayeredPane {
 
+    // Configurações da área de simulação
+    private final int SimulationWidth = 1000;
+    private final int SimulationHeight = 700;
+
+    // Elementos da simulação
     private final DrawPanel DrawPanel = new DrawPanel();
     private final ObjectPanel ObjectPanel = new ObjectPanel();
 
     public SimulationPanel() {
-        setPreferredSize(new Dimension(1000, 700));
+        setPreferredSize(new Dimension(SimulationWidth, SimulationHeight));
         setOpaque(true);
 
         add(DrawPanel, Integer.valueOf(0));
