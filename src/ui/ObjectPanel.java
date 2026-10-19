@@ -1,17 +1,21 @@
+
 package ui;
 
-import javax.swing.Timer;
 import agent.Arrow;
+
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
 
 public class ObjectPanel extends JPanel {
 
-    //Criação da Flecha
-    private final Arrow Arrow = new Arrow(500, 350, 0, 50);
+    private final Arrow Arrow = new Arrow(500, 350, 150, 0);
+    private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
     private long LastUpdateTime;
 
@@ -26,8 +30,25 @@ public class ObjectPanel extends JPanel {
             LastUpdateTime = CurrentTime;
 
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
+
+            Point CurrentPoint = new Point(
+                    (int) Arrow.GetPositionX(),
+                    (int) Arrow.GetPositionY()
+            );
+
+            if (TrailPoints.isEmpty()
+                    || !TrailPoints.get(TrailPoints.size() - 1).equals(CurrentPoint)) {
+                TrailPoints.add(CurrentPoint);
+            }
+
+            // Mantém o histórico limitado, caso seja necessário no futuro.
+            // if (TrailPoints.size() > 300) {
+            //     TrailPoints.remove(0);
+            // }
+
             repaint();
         });
+
         Timer.start();
     }
 
@@ -42,13 +63,28 @@ public class ObjectPanel extends JPanel {
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-        G2.setColor(Color.ORANGE);
+        // Desenha o rastro.
+        G2.setColor(Color.RED);
 
-        double Angle = Math.atan2( //Cálculo de ângulo
+        for (int i = 1; i < TrailPoints.size(); i++) {
+            Point PreviousPoint = TrailPoints.get(i - 1);
+            Point CurrentPoint = TrailPoints.get(i);
+
+            G2.drawLine(
+                    PreviousPoint.x,
+                    PreviousPoint.y,
+                    CurrentPoint.x,
+                    CurrentPoint.y
+            );
+        }
+
+        // Calcula a direção atual da flecha.
+        double Angle = Math.atan2(
                 Arrow.GetVelocityY(),
                 Arrow.GetVelocityX()
         );
 
+        // Posiciona e rotaciona o desenho.
         G2.translate(
                 Arrow.GetPositionX(),
                 Arrow.GetPositionY()
@@ -73,5 +109,11 @@ public class ObjectPanel extends JPanel {
         G2.drawPolyline(PointsX, PointsY, 3);
 
         G2.dispose();
+    }
+
+    public void Reset() {
+        Arrow.Reset();
+        TrailPoints.clear();
+        repaint();
     }
 }

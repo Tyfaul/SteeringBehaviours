@@ -22,4 +22,8 @@ public class SimulationPanel extends JLayeredPane {
         DrawPanel.setBounds(0, 0, getWidth(), getHeight());
         ObjectPanel.setBounds(0, 0, getWidth(), getHeight());
     }
+
+    public void Reset() {
+        ObjectPanel.Reset();
+    }
 }

@@ -1,16 +1,28 @@
+
 package agent;
 
 public class Arrow {
-    private double PositionX; //Posição horizontal
-    private double PositionY; //Posição vertical
-    private double VelocityX; //Velocidade horizontal
-    private double VelocityY; //Velocidade vertical
 
-    public Arrow(double PositionX, double PositionY, double VelocityX, double VelocityY){ //Armazenamento de Instância
+    private double PositionX;
+    private double PositionY;
+    private double VelocityX;
+    private double VelocityY;
+
+    private final double InitialPositionX;
+    private final double InitialPositionY;
+    private final double InitialVelocityX;
+    private final double InitialVelocityY;
+
+    public Arrow(double PositionX, double PositionY, double VelocityX, double VelocityY) {
         this.PositionX = PositionX;
         this.PositionY = PositionY;
         this.VelocityX = VelocityX;
         this.VelocityY = VelocityY;
+
+        InitialPositionX = PositionX;
+        InitialPositionY = PositionY;
+        InitialVelocityX = VelocityX;
+        InitialVelocityY = VelocityY;
     }
 
     public double GetPositionX() {
@@ -33,7 +45,7 @@ public class Arrow {
         PositionX += VelocityX * DeltaTime;
         PositionY += VelocityY * DeltaTime;
 
-        //Limita Movimentação em X e Y, parando na borda
+        //Cria bordas de limitação em X e Y
         if (PositionX >= MaxPositionX) {
             PositionX = MaxPositionX;
             VelocityX = 0;
@@ -53,5 +65,12 @@ public class Arrow {
             PositionY = 0;
             VelocityY = 0;
         }
+    }
+
+    public void Reset() {
+        PositionX = InitialPositionX;
+        PositionY = InitialPositionY;
+        VelocityX = InitialVelocityX;
+        VelocityY = InitialVelocityY;
     }
 }
