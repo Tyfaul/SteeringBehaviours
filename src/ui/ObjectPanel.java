@@ -2,6 +2,7 @@
 package ui;
 
 import agent.Arrow;
+import behaviours.Seek;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -27,12 +28,21 @@ public class ObjectPanel extends JPanel {
 
     // Objetos e dados da simulação
     private final Arrow Arrow = new Arrow();
+    private final Seek Seek = new Seek(Arrow);
+
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
     private long LastUpdateTime;
 
     public ObjectPanel() {
         setOpaque(false);
+
+        addMouseListener(new java.awt.event.MouseAdapter(){
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent Event){
+                Seek.SetTarget(Event.getX(), Event.getY());
+            }
+        });
 
         LastUpdateTime = System.nanoTime();
 
@@ -41,6 +51,9 @@ public class ObjectPanel extends JPanel {
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
 
+            if(Seek.GetIsActive()){
+                Seek.Update(DeltaTime);
+            }
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
 
             Point CurrentPoint = new Point(
@@ -126,6 +139,7 @@ public class ObjectPanel extends JPanel {
 
     public void Reset() {
         Arrow.Reset();
+        Seek.Reset();
         TrailPoints.clear();
         repaint();
     }

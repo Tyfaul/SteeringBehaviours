@@ -16,6 +16,10 @@ public class Arrow {
 
     public Arrow() {
     }
+    public void SetVelocity(double VelocityX, double VelocityY){
+        this.VelocityX = VelocityX;
+        this.VelocityY = VelocityY;
+    }
 
     public double GetPositionX() {
         return PositionX;
@@ -32,6 +36,7 @@ public class Arrow {
     public double GetVelocityY() {
         return VelocityY;
     }
+
 
     public void Update(double DeltaTime, double MaxPositionX, double MaxPositionY) {
         PositionX += VelocityX * DeltaTime;
