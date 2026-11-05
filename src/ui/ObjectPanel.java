@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.awt.BasicStroke;
 
+
 public class ObjectPanel extends JPanel {
     // Configurações da flecha
     private Color ArrowColor = Color.RED;
@@ -30,6 +31,11 @@ public class ObjectPanel extends JPanel {
     private final Arrow Arrow = new Arrow();
     private final Seek Seek = new Seek(Arrow);
 
+    // Seek
+    private int SeekPointX;
+    private int SeekPointY;
+    private boolean HasSeekPoint = false;
+
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
     private long LastUpdateTime;
@@ -37,12 +43,12 @@ public class ObjectPanel extends JPanel {
     public ObjectPanel() {
         setOpaque(false);
 
-        addMouseListener(new java.awt.event.MouseAdapter(){
+        /*addMouseListener(new java.awt.event.MouseAdapter(){
             @Override
             public void mousePressed(java.awt.event.MouseEvent Event){
                 Seek.SetTarget(Event.getX(), Event.getY());
             }
-        });
+        });*/
 
         LastUpdateTime = System.nanoTime();
 
@@ -73,6 +79,33 @@ public class ObjectPanel extends JPanel {
 
             repaint();
         });
+
+        //region Seek Object
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("S"), "CreateSeek"
+        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("s"), "CreateSeek"
+        );
+        //endregion
+
+        getActionMap().put("CreateSeek", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent Event) {
+                java.awt.Point MousePosition = getMousePosition();
+
+                if (MousePosition != null) {
+                    SeekPointX = MousePosition.x;
+                    SeekPointY = MousePosition.y;
+
+                    HasSeekPoint = true;
+                    Seek.SetTarget(SeekPointX, SeekPointY);
+
+                    repaint();
+                }
+            }
+        });
+        //endregion
 
         Timer.start();
     }
@@ -110,6 +143,12 @@ public class ObjectPanel extends JPanel {
                 Arrow.GetVelocityX()
         );
 
+        //Seek Draw
+        if (HasSeekPoint) {
+            G2.setColor(Color.BLUE);
+            G2.fillRect(SeekPointX - 6, SeekPointY - 6, 12, 12);
+        }
+
         // Posiciona e rotaciona o desenho.
         G2.translate(
                 Arrow.GetPositionX(),
@@ -138,6 +177,8 @@ public class ObjectPanel extends JPanel {
     }
 
     public void Reset() {
+        HasSeekPoint = false;
+
         Arrow.Reset();
         Seek.Reset();
         TrailPoints.clear();
