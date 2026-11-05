@@ -5,7 +5,7 @@ public class Arrow {
     // Configurações iniciais
     private final double InitialPositionX = 500;
     private final double InitialPositionY = 350;
-    private final double InitialVelocityX = 150;
+    private final double InitialVelocityX = 0;
     private final double InitialVelocityY = 0;
 
     // Estado atual da flecha
