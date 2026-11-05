@@ -3,6 +3,7 @@ package ui;
 
 import agent.Arrow;
 import behaviours.Seek;
+import behaviours.Flee;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -30,11 +31,17 @@ public class ObjectPanel extends JPanel {
     // Objetos e dados da simulação
     private final Arrow Arrow = new Arrow();
     private final Seek Seek = new Seek(Arrow);
+    private final Flee Flee = new Flee(Arrow);
 
     // Seek
     private int SeekPointX;
     private int SeekPointY;
     private boolean HasSeekPoint = false;
+
+    // Flee
+    private int FleePointX;
+    private int FleePointY;
+    private boolean HasFleePoint = false;
 
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
@@ -80,14 +87,13 @@ public class ObjectPanel extends JPanel {
             repaint();
         });
 
-        //region Seek Object
+        //region Seek
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
                 javax.swing.KeyStroke.getKeyStroke("S"), "CreateSeek"
         );
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
                 javax.swing.KeyStroke.getKeyStroke("s"), "CreateSeek"
         );
-        //endregion
 
         getActionMap().put("CreateSeek", new javax.swing.AbstractAction() {
             @Override
@@ -100,6 +106,33 @@ public class ObjectPanel extends JPanel {
 
                     HasSeekPoint = true;
                     Seek.SetTarget(SeekPointX, SeekPointY);
+
+                    repaint();
+                }
+            }
+        });
+        //endregion
+
+        //region Flee
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("F"), "CreateFlee"
+        );
+
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("f"), "CreateFlee"
+        );
+
+        getActionMap().put("CreateFlee", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent Event) {
+                Point MousePosition = getMousePosition();
+
+                if (MousePosition != null) {
+                    FleePointX = MousePosition.x;
+                    FleePointY = MousePosition.y;
+
+                    HasFleePoint = true;
+                    Flee.SetTarget(FleePointX, FleePointY);
 
                     repaint();
                 }
