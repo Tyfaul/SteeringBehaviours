@@ -29,6 +29,8 @@ public class Seek {
     private double DirectionX;
     private double DirectionY;
 
+    //private double InfluenceRadius = 150;
+
     public void setTarget(){
         this.TargetX = TargetX;
         this.TargetY = TargetY;
@@ -103,6 +105,21 @@ public class Seek {
     public boolean GetIsActive(){
         return IsActive;
     }
+
+    /*
+    //Raio de Influencia
+    public boolean IsInsideRadius() {
+        PositionX = Arrow.GetPositionX();
+        PositionY = Arrow.GetPositionY();
+
+        double DistanceX = TargetX - PositionX;
+        double DistanceY = TargetY - PositionY;
+
+        double Distance = sqrt(pow(DistanceX, 2) + pow(DistanceY, 2));
+
+        return Distance <= InfluenceRadius;
+    }
+    */
 
     //Limpar os pontos ao reiniciar
     public void Reset() {

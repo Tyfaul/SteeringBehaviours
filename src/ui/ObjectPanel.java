@@ -64,8 +64,11 @@ public class ObjectPanel extends JPanel {
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
 
-            if(Seek.GetIsActive()){
+            if (Seek.GetIsActive()) { //Atualiza Seek
                 Seek.Update(DeltaTime);
+            }
+            if (Flee.GetIsActive() && Flee.IsInsideRadius()) { //Atualiza Flee
+                Flee.Update(DeltaTime);
             }
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
 
@@ -182,6 +185,12 @@ public class ObjectPanel extends JPanel {
             G2.fillRect(SeekPointX - 6, SeekPointY - 6, 12, 12);
         }
 
+        //Flee Draw
+        if (HasFleePoint) {
+            G2.setColor(Color.RED);
+            G2.fillRect(FleePointX - 6, FleePointY - 6, 12, 12);
+        }
+
         // Posiciona e rotaciona o desenho.
         G2.translate(
                 Arrow.GetPositionX(),
@@ -210,11 +219,18 @@ public class ObjectPanel extends JPanel {
     }
 
     public void Reset() {
+        //Bool
         HasSeekPoint = false;
+        HasFleePoint = false;
 
+        //Resets
         Arrow.Reset();
         Seek.Reset();
+        Flee.Reset();
+
+        //Clear
         TrailPoints.clear();
+        //Paint
         repaint();
     }
 }
