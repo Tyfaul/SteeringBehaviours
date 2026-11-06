@@ -8,12 +8,8 @@ public class Collision { //Detecção de colisão para deletar objetos específi
             double TargetY,
             double Radius) {
 
-        double DistanceX = TargetX - PositionX;
-        double DistanceY = TargetY - PositionY;
-
-        double Distance = Math.sqrt(
-                Math.pow(DistanceX, 2) +
-                        Math.pow(DistanceY, 2)
+        double Distance = SteeringMath.CalculateDistance(
+                PositionX, PositionY, TargetX, TargetY
         );
 
         return Distance <= Radius;

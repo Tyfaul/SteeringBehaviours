@@ -1,35 +1,35 @@
 package behaviours;
 
 import agent.Arrow;
-
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import java.awt.geom.Point2D;
 
 public class Flee {
-    private Arrow Arrow;
+
+    private final Arrow Arrow;
+
+    // Configurações
+    private double maxSpeed;
+    private double InfluenceRadius = 300;
+
+    // Posição
+    private double PositionX;
+    private double PositionY;
+    private double TargetX;
+    private double TargetY;
+
+    // Velocidade
+    private double currentVelocityX;
+    private double currentVelocityY;
+
+    // Direção
+    private double DirectionX;
+    private double DirectionY;
+
+    private boolean IsActive = false;
 
     public Flee(Arrow Arrow) {
         this.Arrow = Arrow;
     }
-
-        private boolean IsActive = false;
-
-        // Positions
-        private double PositionX;
-        private double PositionY;
-        private double TargetX;
-        private double TargetY;
-
-        // Velocity
-        private double maxSpeed = 200;
-        private double currentVelocityX;
-        private double currentVelocityY;
-
-        // Direction
-        private double DirectionX;
-        private double DirectionY;
-
-    private double InfluenceRadius = 150;
 
     public void SetTarget(double TargetX, double TargetY) {
         this.TargetX = TargetX;
@@ -37,60 +37,54 @@ public class Flee {
         SetActive(true);
     }
 
-    //Mesma base de Seek, apenas invertendo Position e Target (✿◠‿◠)
-    public double CalculateDirectionX(double PositionX, double TargetX){
-        return PositionX - TargetX;
-    }
-    public double CalculateDirectionY(double PositionY, double TargetY){
-        return PositionY - TargetY;
-    }
+    // Calcula a força sem alterar a velocidade do Arrow
+    public Point2D.Double CalculateSteering() {
 
-    private double CalculateVectorLength() {
-        return sqrt(pow(CalculateDirectionX(PositionX, TargetX), 2) + pow(CalculateDirectionY(PositionY, TargetY), 2));
-    }
-
-    private double CalculateNormalizedX() { //Evitar divisão por Zero
-        double Length = CalculateVectorLength();
-        if (Length > 0) {
-            return DirectionX / Length;
-        }
-        return 0;
-    }
-    private double CalculateNormalizedY() { //Evitar divisão por Zero
-        double Length = CalculateVectorLength();
-        if (Length > 0) {
-            return DirectionY / Length;
-        }
-        return 0;
-    }
-    private double CalculateDesiredVelocityX(){
-        return CalculateNormalizedX() * maxSpeed;
-    }
-    private double CalculateDesiredVelocityY(){
-        return CalculateNormalizedY() * maxSpeed;
-    }
-
-    private double CalculateSteeringX(){
-        return CalculateDesiredVelocityX() - currentVelocityX;
-    }
-    private double CalculateSteeringY(){
-        return CalculateDesiredVelocityY() - currentVelocityY;
-    }
-
-    public void Update(double DeltaTime) {
         PositionX = Arrow.GetPositionX();
         PositionY = Arrow.GetPositionY();
-
-        DirectionX = CalculateDirectionX(PositionX, TargetX);
-        DirectionY = CalculateDirectionY(PositionY, TargetY);
 
         currentVelocityX = Arrow.GetVelocityX();
         currentVelocityY = Arrow.GetVelocityY();
 
-        double NewVelocityX = currentVelocityX + CalculateSteeringX() * DeltaTime;
-        double NewVelocityY = currentVelocityY + CalculateSteeringY() * DeltaTime;
+        if (!IsInsideRadius()) {
+            return new Point2D.Double(0, 0);
+        }
+
+        // Inverte a direção para fugir do alvo
+        DirectionX = -SteeringMath.CalculateDirectionX(PositionX, TargetX);
+        DirectionY = -SteeringMath.CalculateDirectionY(PositionY, TargetY);
+
+        double NormalizedX = SteeringMath.NormalizeX(DirectionX, DirectionY);
+        double NormalizedY = SteeringMath.NormalizeY(DirectionX, DirectionY);
+
+        double DesiredVelocityX = NormalizedX * maxSpeed;
+        double DesiredVelocityY = NormalizedY * maxSpeed;
+
+        double SteeringX = DesiredVelocityX - currentVelocityX;
+        double SteeringY = DesiredVelocityY - currentVelocityY;
+
+        return new Point2D.Double(SteeringX, SteeringY);
+    }
+
+    // Mantém a compatibilidade temporária com o sistema atual
+    public void Update(double DeltaTime) {
+        Point2D.Double Steering = CalculateSteering();
+
+        double NewVelocityX = currentVelocityX + Steering.x * DeltaTime;
+        double NewVelocityY = currentVelocityY + Steering.y * DeltaTime;
 
         Arrow.SetVelocity(NewVelocityX, NewVelocityY);
+    }
+
+    public boolean IsInsideRadius() {
+        PositionX = Arrow.GetPositionX();
+        PositionY = Arrow.GetPositionY();
+
+        double Distance = SteeringMath.CalculateDistance(
+                PositionX, PositionY, TargetX, TargetY
+        );
+
+        return Distance <= InfluenceRadius;
     }
 
     public void SetActive(boolean IsActive) {
@@ -101,22 +95,16 @@ public class Flee {
         return IsActive;
     }
 
-    //Raio de Influencia
-    public boolean IsInsideRadius() {
-        PositionX = Arrow.GetPositionX();
-        PositionY = Arrow.GetPositionY();
-
-        double DistanceX = TargetX - PositionX;
-        double DistanceY = TargetY - PositionY;
-
-        double Distance = sqrt(pow(DistanceX, 2) + pow(DistanceY, 2));
-
-        return Distance <= InfluenceRadius;
-    }
-
     public void Reset() {
         TargetX = 0;
         TargetY = 0;
         SetActive(false);
+    }
+
+    public void SetMaxSpeed(double MaxSpeed) {
+        maxSpeed = Math.max(0, MaxSpeed);
+    }
+    public void SetInfluenceRadius(double InfluenceRadius) {
+        this.InfluenceRadius = Math.max(0, InfluenceRadius);
     }
 }

@@ -1,6 +1,6 @@
-
 package ui;
 
+import behaviours.SteeringManager;
 import javax.swing.JLayeredPane;
 import java.awt.Dimension;
 
@@ -30,5 +30,13 @@ public class SimulationPanel extends JLayeredPane {
 
     public void Reset() {
         ObjectPanel.Reset();
+    }
+
+    public SteeringManager GetSteeringManager() {
+        return ObjectPanel.GetSteeringManager();
+    }
+
+    public ObjectPanel GetObjectPanel() {
+        return ObjectPanel;
     }
 }

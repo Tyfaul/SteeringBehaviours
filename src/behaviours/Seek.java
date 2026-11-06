@@ -1,142 +1,131 @@
 package behaviours;
 
-import static java.lang.Math.sqrt;
-import static java.lang.Math.pow;
 import agent.Arrow;
+import java.awt.geom.Point2D;
 
 public class Seek {
 
-    private Arrow Arrow;
-    public Seek (Arrow Arrow){
-        this.Arrow = Arrow;
-        System.out.println(Arrow == null);
-    }
+    private final Arrow Arrow;
 
-    private boolean IsActive = false;
+    // Configurações
+    private double maxSpeed;
+    private double InfluenceRadius = 300;
+    private double CollisionRadius = 12;
 
-    //Positions
+    // Posição
     private double PositionX;
     private double PositionY;
     private double TargetX;
     private double TargetY;
 
-    //Velocity
-    private double maxSpeed = 200;
+    // Velocidade
     private double currentVelocityX;
     private double currentVelocityY;
 
-    //Direction
+    // Direção
     private double DirectionX;
     private double DirectionY;
 
-    private double InfluenceRadius = 300;
-    private double CollisionRadius = 12;
+    private boolean IsActive = false;
 
-    public double CalculateDirectionX(double PositionX, double TargetX){
-        return TargetX - PositionX;
-    }
-    public double CalculateDirectionY(double PositionY, double TargetY){
-        return TargetY - PositionY;
+    public Seek(Arrow Arrow) {
+        this.Arrow = Arrow;
     }
 
-    private double CalculateVectorLength() {
-        return sqrt(pow(CalculateDirectionX(PositionX, TargetX), 2) + pow(CalculateDirectionY(PositionY, TargetY), 2));
-    }
-
-    private double CalculateNormalizedX(){
-        if (DirectionX != 0){
-            return DirectionX / CalculateVectorLength();
-        }
-        else {return 0;}
-    }
-    private double CalculateNormalizedY(){
-        if (DirectionY != 0){
-            return DirectionY / CalculateVectorLength();
-        }
-        else {return 0;}
-    }
-
-    private double CalculateDesiredVelocityX(){
-        return CalculateNormalizedX() * maxSpeed;
-    }
-    private double CalculateDesiredVelocityY(){
-        return CalculateNormalizedY() * maxSpeed;
-    }
-
-    private double CalculateSteeringX(){
-        return CalculateDesiredVelocityX() - currentVelocityX;
-    }
-    private double CalculateSteeringY(){
-        return CalculateDesiredVelocityY() - currentVelocityY;
-    }
-
-    public void SetTarget(double TargetX, double TargetY){
+    public void SetTarget(double TargetX, double TargetY) {
         this.TargetX = TargetX;
         this.TargetY = TargetY;
         SetActive(true);
     }
 
-    public void Update(double DeltaTime) {
+    // Calcula a força sem alterar a velocidade do Arrow
+    public Point2D.Double CalculateSteering() {
+
         PositionX = Arrow.GetPositionX();
         PositionY = Arrow.GetPositionY();
-
-        //Collision
-        if (HasReachedTarget()) {
-            Arrow.SetVelocity(0, 0);
-            Reset();
-            return;
-        }
-
-        DirectionX = CalculateDirectionX(PositionX, TargetX);
-        DirectionY = CalculateDirectionY(PositionY, TargetY);
 
         currentVelocityX = Arrow.GetVelocityX();
         currentVelocityY = Arrow.GetVelocityY();
 
-        CalculateSteeringX();
-        CalculateSteeringY();
+        if (HasReachedTarget()) {
+            Reset();
+            return new Point2D.Double(0, 0);
+        }
 
-        double NewVelocityX = currentVelocityX + CalculateSteeringX() * DeltaTime;
-        double NewVelocityY = currentVelocityY + CalculateSteeringY() * DeltaTime;
+        DirectionX = SteeringMath.CalculateDirectionX(PositionX, TargetX);
+        DirectionY = SteeringMath.CalculateDirectionY(PositionY, TargetY);
+
+        double NormalizedX = SteeringMath.NormalizeX(DirectionX, DirectionY);
+        double NormalizedY = SteeringMath.NormalizeY(DirectionX, DirectionY);
+
+        double DesiredVelocityX = NormalizedX * maxSpeed;
+        double DesiredVelocityY = NormalizedY * maxSpeed;
+
+        double SteeringX = DesiredVelocityX - currentVelocityX;
+        double SteeringY = DesiredVelocityY - currentVelocityY;
+
+        return new Point2D.Double(SteeringX, SteeringY);
+    }
+
+    // Mantém a compatibilidade temporária com o sistema atual
+    public void Update(double DeltaTime) {
+        Point2D.Double Steering = CalculateSteering();
+
+        if (!IsActive) {
+            Arrow.SetVelocity(0, 0);
+            return;
+        }
+
+        double NewVelocityX = currentVelocityX + Steering.x * DeltaTime;
+        double NewVelocityY = currentVelocityY + Steering.y * DeltaTime;
 
         Arrow.SetVelocity(NewVelocityX, NewVelocityY);
     }
 
-    public void SetActive(boolean IsActive){
-        this.IsActive = IsActive;
-    }
-    public boolean GetIsActive(){
-        return IsActive;
-    }
-
-    //Raio de Influencia
     public boolean IsInsideRadius() {
         PositionX = Arrow.GetPositionX();
         PositionY = Arrow.GetPositionY();
 
-        double DistanceX = TargetX - PositionX;
-        double DistanceY = TargetY - PositionY;
-
-        double Distance = sqrt(pow(DistanceX, 2) + pow(DistanceY, 2));
+        double Distance = SteeringMath.CalculateDistance(
+                PositionX, PositionY, TargetX, TargetY
+        );
 
         return Distance <= InfluenceRadius;
     }
 
-    //Collision
     public boolean HasReachedTarget() {
-        return Collision.CheckCollision(
-                PositionX,
-                PositionY,
-                TargetX,
-                TargetY,
-                CollisionRadius
+        return Collision.CheckCollision(PositionX, PositionY, TargetX, TargetY, CollisionRadius
         );
     }
+    public boolean IsNearTarget() {
 
-    //Limpar os pontos ao reiniciar
+        double Distance = SteeringMath.CalculateDistance(Arrow.GetPositionX(), Arrow.GetPositionY(), TargetX, TargetY);
+
+        return Distance <= CollisionRadius;
+    }
+
+    public void SetActive(boolean IsActive) {
+        this.IsActive = IsActive;
+    }
+
+    public boolean GetIsActive() {
+        return IsActive;
+    }
+
+    public double GetInfluenceRadius() {
+        return InfluenceRadius;
+    }
+
     public void Reset() {
         TargetX = 0;
         TargetY = 0;
         SetActive(false);
+    }
+
+    public void SetMaxSpeed(double MaxSpeed) {
+        maxSpeed = Math.max(0, MaxSpeed);
+    }
+    public void SetInfluenceRadius(double InfluenceRadius) {
+        this.InfluenceRadius = Math.max(0, InfluenceRadius);
     }
 }

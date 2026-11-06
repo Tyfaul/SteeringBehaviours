@@ -1,11 +1,14 @@
 package ui;
 
 import agent.Arrow;
+import agent.Obstacle;
 
+import behaviours.SteeringManager;
 import behaviours.Seek;
 import behaviours.Flee;
 import behaviours.Wander;
 import behaviours.Arrive;
+import behaviours.ObstacleAvoidance;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -20,12 +23,16 @@ import java.awt.BasicStroke;
 
 public class ObjectPanel extends JPanel {
     // Configurações da flecha
-    private Color ArrowColor = Color.RED;
+    private Color ArrowColor = new Color(255, 0, 0);
     private int ArrowSize = 24;
 
     // Configurações do rastro
-    private Color TrailColor = Color.ORANGE;
+    private Color TrailColor = new Color(255, 124, 0);
     private float TrailThickness = 2.0f;
+
+    // Configurações dos obstáculos
+    private int ObstacleSize = 40;
+    private final Color ObstacleColor = new Color(139, 90, 43);
 
     // Configurações da atualização
     private final int UpdateInterval = 16;
@@ -52,6 +59,15 @@ public class ObjectPanel extends JPanel {
     private int ArrivePointY;
     private boolean HasArrivePoint = false;
 
+    // Obstáculos
+    private final ArrayList<Obstacle> Obstacles = new ArrayList<>();
+
+    private final ObstacleAvoidance ObstacleAvoidance =
+            new ObstacleAvoidance(Arrow, Obstacles);
+
+    private final SteeringManager SteeringManager =
+            new SteeringManager(Arrow, Seek, Flee, Wander, Arrive, ObstacleAvoidance);
+
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
     private long LastUpdateTime;
@@ -74,18 +90,7 @@ public class ObjectPanel extends JPanel {
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
 
-            if (Flee.GetIsActive() && Flee.IsInsideRadius()) {
-                Flee.Update(DeltaTime);
-            }
-            else if (Arrive.GetIsActive()) {
-                Arrive.Update(DeltaTime);
-            }
-            else if (Seek.GetIsActive() && Seek.IsInsideRadius()) {
-                Seek.Update(DeltaTime);
-            }
-            else {
-                Wander.Update(DeltaTime);
-            }
+            SteeringManager.Update(DeltaTime);
 
             //region Remoção por Collision
             // Remove o ponto quando o Seek termina
@@ -119,12 +124,8 @@ public class ObjectPanel extends JPanel {
         });
 
         //region Seek
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("S"), "CreateSeek"
-        );
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("s"), "CreateSeek"
-        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("S"), "CreateSeek");
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("s"), "CreateSeek");
 
         getActionMap().put("CreateSeek", new javax.swing.AbstractAction() {
             @Override
@@ -132,12 +133,7 @@ public class ObjectPanel extends JPanel {
                 java.awt.Point MousePosition = getMousePosition();
 
                 if (MousePosition != null) {
-                    SeekPointX = MousePosition.x;
-                    SeekPointY = MousePosition.y;
-
-                    HasSeekPoint = true;
-                    Seek.SetTarget(SeekPointX, SeekPointY);
-
+                    Obstacles.add(new Obstacle(MousePosition.x, MousePosition.y, ObstacleSize));
                     repaint();
                 }
             }
@@ -145,13 +141,8 @@ public class ObjectPanel extends JPanel {
         //endregion
 
         //region Flee
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("F"), "CreateFlee"
-        );
-
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("f"), "CreateFlee"
-        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("F"), "CreateFlee");
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("f"), "CreateFlee");
 
         getActionMap().put("CreateFlee", new javax.swing.AbstractAction() {
             @Override
@@ -164,7 +155,6 @@ public class ObjectPanel extends JPanel {
 
                     HasFleePoint = true;
                     Flee.SetTarget(FleePointX, FleePointY);
-
                     repaint();
                 }
             }
@@ -172,13 +162,8 @@ public class ObjectPanel extends JPanel {
         //endregion
 
         //region Arrive
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("A"), "CreateArrive"
-        );
-
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                javax.swing.KeyStroke.getKeyStroke("a"), "CreateArrive"
-        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("A"), "CreateArrive");
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("a"), "CreateArrive");
 
         getActionMap().put("CreateArrive", new javax.swing.AbstractAction() {
             @Override
@@ -191,7 +176,22 @@ public class ObjectPanel extends JPanel {
 
                     HasArrivePoint = true;
                     Arrive.SetTarget(ArrivePointX, ArrivePointY);
+                    repaint();
+                }
+            }
+        });
+//endregion
 
+        //region Obstacle
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("O"), "CreateObstacle");
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke("o"), "CreateObstacle");
+
+        getActionMap().put("CreateObstacle", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent Event) {
+                Point MousePosition = getMousePosition();
+
+                if (MousePosition != null) {Obstacles.add(new Obstacle(MousePosition.x, MousePosition.y, ObstacleSize));
                     repaint();
                 }
             }
@@ -207,10 +207,7 @@ public class ObjectPanel extends JPanel {
 
         Graphics2D G2 = (Graphics2D) g.create();
 
-        G2.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON
-        );
+        G2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Desenha o rastro.
         G2.setColor(TrailColor);
@@ -220,19 +217,11 @@ public class ObjectPanel extends JPanel {
             Point PreviousPoint = TrailPoints.get(i - 1);
             Point CurrentPoint = TrailPoints.get(i);
 
-            G2.drawLine(
-                    PreviousPoint.x,
-                    PreviousPoint.y,
-                    CurrentPoint.x,
-                    CurrentPoint.y
-            );
+            G2.drawLine(PreviousPoint.x, PreviousPoint.y, CurrentPoint.x, CurrentPoint.y);
         }
 
         // Calcula a direção atual da flecha.
-        double Angle = Math.atan2(
-                Arrow.GetVelocityY(),
-                Arrow.GetVelocityX()
-        );
+        double Angle = Math.atan2(Arrow.GetVelocityY(), Arrow.GetVelocityX());
 
         //Seek Draw
         if (HasSeekPoint) {
@@ -252,14 +241,17 @@ public class ObjectPanel extends JPanel {
             G2.fillRect(ArrivePointX - 6, ArrivePointY - 6, 12, 12);
         }
 
+        // Obstacles Draw
+        G2.setColor(ObstacleColor);
+
+        for (Obstacle Obstacle : Obstacles) {
+            int Size = Obstacle.GetSize();
+            G2.fillRect((int) (Obstacle.GetPositionX() - Size / 2.0), (int) (Obstacle.GetPositionY() - Size / 2.0), Size, Size);
+        }
+
         // Posiciona e rotaciona o desenho.
-        G2.translate(
-                Arrow.GetPositionX(),
-                Arrow.GetPositionY()
-        );
-
+        G2.translate(Arrow.GetPositionX(), Arrow.GetPositionY());
         G2.rotate(Angle);
-
         G2.setColor(ArrowColor);
 
         int[] PointsX = {
@@ -275,7 +267,6 @@ public class ObjectPanel extends JPanel {
         };
 
         G2.drawPolyline(PointsX, PointsY, 3);
-
         G2.dispose();
     }
 
@@ -294,7 +285,30 @@ public class ObjectPanel extends JPanel {
 
         //Clear
         TrailPoints.clear();
+        Obstacles.clear();
         //Paint
+        repaint();
+    }
+
+    // Tamanho dos obstáculos
+    public int GetObstacleSize() {return ObstacleSize;}
+    public void SetObstacleSize(int ObstacleSize) {this.ObstacleSize = Math.max(5, ObstacleSize);}
+
+    public SteeringManager GetSteeringManager() {return SteeringManager;}
+
+    // Espessura do rastro
+    public float GetTrailThickness() {return TrailThickness;}
+
+    public void SetTrailThickness(float TrailThickness) {
+        this.TrailThickness = Math.max(0.5f, TrailThickness);
+        repaint();
+    }
+
+    // Cor do rastro
+    public Color GetTrailColor() {return TrailColor;}
+
+    public void SetTrailColor(Color TrailColor) {
+        this.TrailColor = TrailColor;
         repaint();
     }
 }
