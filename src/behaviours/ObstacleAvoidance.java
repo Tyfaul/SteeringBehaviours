@@ -78,4 +78,7 @@ public class ObstacleAvoidance {
     public void SetMaxSpeed(double MaxSpeed) {
         maxSpeed = Math.max(0, MaxSpeed);
     }
+    public void ClearObstacles() {
+        Obstacles.clear();
+    }
 }

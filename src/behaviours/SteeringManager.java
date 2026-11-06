@@ -10,6 +10,8 @@ public class SteeringManager {
     private double FleeWeight = 0.30;
     private double WanderWeight = 0.05;
     private double ArriveWeight = 0.50;
+    private double ObstacleAvoidanceWeight = 1.0;
+    private double PathFollowingWeight = 1.0;
 
     // Limites do movimento
     private double MaxSteeringForce = 300;
@@ -22,6 +24,8 @@ public class SteeringManager {
     private final Wander Wander;
     private final Arrive Arrive;
     private final ObstacleAvoidance ObstacleAvoidance;
+    private final PathFollowing PathFollowing;
+    private boolean PathFollowingActive = false;
 
     public SteeringManager(
             Arrow Arrow,
@@ -29,7 +33,8 @@ public class SteeringManager {
             Flee Flee,
             Wander Wander,
             Arrive Arrive,
-            ObstacleAvoidance ObstacleAvoidance) {
+            ObstacleAvoidance ObstacleAvoidance,
+            PathFollowing PathFollowing) {
 
         this.Arrow = Arrow;
         this.Seek = Seek;
@@ -37,6 +42,7 @@ public class SteeringManager {
         this.Wander = Wander;
         this.Arrive = Arrive;
         this.ObstacleAvoidance = ObstacleAvoidance;
+        this.PathFollowing = PathFollowing;
 
         SetMaxSpeed(MaxSpeed);
     }
@@ -48,7 +54,8 @@ public class SteeringManager {
         double TotalWeight = 0;
 
         // Wander
-        if (WanderWeight > 0 && //Desativa Wander caso esteja perto de Arrive ou Seek
+        if (WanderWeight > 0 &&
+                !PathFollowingActive &&
                 !(Arrive.GetIsActive() && Arrive.IsInsideSlowRadius()) &&
                 !(Seek.GetIsActive() && Seek.IsNearTarget())) {
 
@@ -90,11 +97,20 @@ public class SteeringManager {
         if (!Arrive.IsInsideSlowRadius()) {
             Point2D.Double AvoidanceForce = ObstacleAvoidance.CalculateSteering();
 
-            if (AvoidanceForce.x != 0 || AvoidanceForce.y != 0) {
-                SteeringX += AvoidanceForce.x;
-                SteeringY += AvoidanceForce.y;
-                TotalWeight += 1.0;
+            if ((AvoidanceForce.x != 0 || AvoidanceForce.y != 0) && ObstacleAvoidanceWeight > 0) {
+                SteeringX += AvoidanceForce.x * ObstacleAvoidanceWeight;
+                SteeringY += AvoidanceForce.y * ObstacleAvoidanceWeight;
+                TotalWeight += ObstacleAvoidanceWeight;
             }
+        }
+
+        // Path Following
+        if (PathFollowingActive && PathFollowing.HasValidPath() && PathFollowingWeight > 0) {
+            Point2D.Double Force = PathFollowing.CalculateSteering();
+
+            SteeringX += Force.x * PathFollowingWeight;
+            SteeringY += Force.y * PathFollowingWeight;
+            TotalWeight += PathFollowingWeight;
         }
 
         // Normaliza os pesos ativos
@@ -134,36 +150,63 @@ public class SteeringManager {
     }
 
     // Acesso aos pesos para a interface
+    //Acesso de Seek
     public double GetSeekWeight() {
         return SeekWeight;
     }
-
     public void SetSeekWeight(double Weight) {
         SeekWeight = Math.max(0, Weight);
     }
 
+    //Acesso de Flee
     public double GetFleeWeight() {
         return FleeWeight;
     }
-
     public void SetFleeWeight(double Weight) {
         FleeWeight = Math.max(0, Weight);
     }
 
+    //Acesso de Wander
     public double GetWanderWeight() {
         return WanderWeight;
     }
-
     public void SetWanderWeight(double Weight) {
         WanderWeight = Math.max(0, Weight);
     }
 
+    //Acesso de Arrive
     public double GetArriveWeight() {
         return ArriveWeight;
     }
-
     public void SetArriveWeight(double Weight) {
         ArriveWeight = Math.max(0, Weight);
+    }
+
+    // Acesso de Obstacle Avoidance
+    public double GetObstacleAvoidanceWeight() {
+        return ObstacleAvoidanceWeight;
+    }
+    public void SetObstacleAvoidanceWeight(double Weight) { //Mesmo de PathFollowing
+        ObstacleAvoidanceWeight = Math.max(0, Weight);
+        if (ObstacleAvoidanceWeight == 0) {ObstacleAvoidance.ClearObstacles();}}
+
+    //Acesso de PathFollowing
+    public void SetPathFollowingActive(boolean Active) {
+        PathFollowingActive = Active;
+    }
+    public boolean GetPathFollowingActive() {
+        return PathFollowingActive;
+    }
+    public double GetPathFollowingWeight() {
+        return PathFollowingWeight;
+    }
+    public void SetPathFollowingWeight(double Weight) {
+        PathFollowingWeight = Math.max(0, Weight);
+
+        if (PathFollowingWeight == 0) { //Limpa os pontos caso zere o peso, para limpeza apenas disso
+            PathFollowingActive = false;
+            PathFollowing.ClearPath();
+        }
     }
 
     // Velocidade máxima
@@ -171,7 +214,7 @@ public class SteeringManager {
         return MaxSpeed;
     }
 
-    public void SetMaxSpeed(double MaxSpeed) {
+    public void SetMaxSpeed(double MaxSpeed) { //Define a velocidade para todos os comportamentos
         this.MaxSpeed = Math.max(0, MaxSpeed);
 
         Seek.SetMaxSpeed(this.MaxSpeed);
@@ -179,6 +222,7 @@ public class SteeringManager {
         Arrive.SetMaxSpeed(this.MaxSpeed);
         Wander.SetMaxSpeed(this.MaxSpeed);
         ObstacleAvoidance.SetMaxSpeed(this.MaxSpeed);
+        PathFollowing.SetMaxSpeed(this.MaxSpeed);
     }
 
     // Raio de influência

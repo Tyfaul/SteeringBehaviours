@@ -50,6 +50,15 @@ public class SettingsPanel extends JPanel {
         add(CreateWeightRow("Wander", SteeringManager.GetWanderWeight(), SteeringManager::SetWanderWeight));
         add(Box.createVerticalStrut(25));
 
+        add(CreateWeightRow("Obstacle", SteeringManager.GetObstacleAvoidanceWeight(), Value -> { //Mesmo de Path Following
+            SteeringManager.SetObstacleAvoidanceWeight(Value);
+            if (Value == 0) {ObjectPanel.repaint();}}));
+
+        add(CreateWeightRow("Path Following", SteeringManager.GetPathFollowingWeight(), Value -> {
+            SteeringManager.SetPathFollowingWeight(Value);
+            if (Value == 0) {ObjectPanel.repaint();}}));
+        add(Box.createVerticalStrut(25));
+
         // Movimento
         JLabel MovementTitle = new JLabel("Movimento");
         MovementTitle.setFont(new Font("Arial", Font.BOLD, 14));
@@ -87,24 +96,11 @@ public class SettingsPanel extends JPanel {
         add(Box.createVerticalGlue());
     }
 
-    private JPanel CreateWeightRow(
-            String Name,
-            double InitialValue,
-            DoubleConsumer Setter) {
-
-        return CreateValueRow(
-                Name, InitialValue,
-                WeightStep, 0, 1, Setter
-        );
+    private JPanel CreateWeightRow(String Name, double InitialValue, DoubleConsumer Setter) {
+        return CreateValueRow(Name, InitialValue, WeightStep, 0, 1, Setter);
     }
 
-    private JPanel CreateValueRow(
-            String Name,
-            double InitialValue,
-            double Step,
-            double Minimum,
-            double Maximum,
-            DoubleConsumer Setter) {
+    private JPanel CreateValueRow(String Name, double InitialValue, double Step, double Minimum, double Maximum, DoubleConsumer Setter) {
 
         JPanel Row = new JPanel(new GridBagLayout());
         Row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
@@ -114,7 +110,7 @@ public class SettingsPanel extends JPanel {
         Constraints.insets = new Insets(0, 2, 0, 2);
 
         JLabel NameLabel = new JLabel(Name);
-        NameLabel.setPreferredSize(new Dimension(65, 30));
+        NameLabel.setPreferredSize(new Dimension(110, 30)); //Espaço dos nomes
 
         Constraints.gridx = 0;
         Constraints.anchor = GridBagConstraints.WEST;
@@ -141,7 +137,6 @@ public class SettingsPanel extends JPanel {
             CurrentValue[0] = Math.max(
                     Minimum, CurrentValue[0] - Step
             );
-
             Setter.accept(CurrentValue[0]);
             ValueLabel.setText(FormatValue(CurrentValue[0]));
         });
@@ -150,7 +145,6 @@ public class SettingsPanel extends JPanel {
             CurrentValue[0] = Math.min(
                     Maximum, CurrentValue[0] + Step
             );
-
             Setter.accept(CurrentValue[0]);
             ValueLabel.setText(FormatValue(CurrentValue[0]));
         });
@@ -179,11 +173,7 @@ public class SettingsPanel extends JPanel {
         ColorButton.setOpaque(true);
 
         ColorButton.addActionListener(Event -> {
-            Color SelectedColor = JColorChooser.showDialog(
-                    this,
-                    "Escolher cor do rastro",
-                    ObjectPanel.GetTrailColor()
-            );
+            Color SelectedColor = JColorChooser.showDialog(this, "Escolher cor do rastro", ObjectPanel.GetTrailColor());
 
             if (SelectedColor != null) {
                 ObjectPanel.SetTrailColor(SelectedColor);
@@ -193,7 +183,6 @@ public class SettingsPanel extends JPanel {
 
         Row.add(NameLabel, BorderLayout.WEST);
         Row.add(ColorButton, BorderLayout.CENTER);
-
         return Row;
     }
 

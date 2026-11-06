@@ -15,8 +15,8 @@ import java.awt.event.KeyEvent;
 public class MainWindow extends JFrame {
 
     // Configurações da janela
-    private final int Width = 1250;
-    private final int Height = 700;
+    private final int Width = 1920;
+    private final int Height = 1080;
     private final int MinimumWidth = 600;
     private final int MinimumHeight = 400;
 
