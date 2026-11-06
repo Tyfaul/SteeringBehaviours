@@ -126,3 +126,4 @@ Os seguintes materiais foram utilizados como referência para o estudo e desenvo
 - **Path Following:** [5.7 Path Following (Steering) - Nature of Code](https://www.youtube.com/watch?v=rlZYT-uvmGQ)
 
 ### Inteligência Artificial utilizada para correção de bugs e criação de interface visual.
+### Ajuda do meu amigo Marco
