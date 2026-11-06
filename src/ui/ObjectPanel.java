@@ -4,6 +4,7 @@ package ui;
 import agent.Arrow;
 import behaviours.Seek;
 import behaviours.Flee;
+import behaviours.Wander;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -32,6 +33,7 @@ public class ObjectPanel extends JPanel {
     private final Arrow Arrow = new Arrow();
     private final Seek Seek = new Seek(Arrow);
     private final Flee Flee = new Flee(Arrow);
+    private final Wander Wander = new Wander(Arrow);
 
     // Seek
     private int SeekPointX;
@@ -64,12 +66,15 @@ public class ObjectPanel extends JPanel {
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
 
+            Wander.Update(DeltaTime); //Atualiza Wander
+
             if (Seek.GetIsActive()) { //Atualiza Seek
                 Seek.Update(DeltaTime);
             }
             if (Flee.GetIsActive() && Flee.IsInsideRadius()) { //Atualiza Flee
                 Flee.Update(DeltaTime);
             }
+
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
 
             Point CurrentPoint = new Point(
@@ -227,6 +232,7 @@ public class ObjectPanel extends JPanel {
         Arrow.Reset();
         Seek.Reset();
         Flee.Reset();
+        Wander.Reset();
 
         //Clear
         TrailPoints.clear();
