@@ -30,6 +30,7 @@ public class Seek {
     private double DirectionY;
 
     private double InfluenceRadius = 300;
+    private double CollisionRadius = 12;
 
     public double CalculateDirectionX(double PositionX, double TargetX){
         return TargetX - PositionX;
@@ -79,6 +80,13 @@ public class Seek {
         PositionX = Arrow.GetPositionX();
         PositionY = Arrow.GetPositionY();
 
+        //Collision
+        if (HasReachedTarget()) {
+            Arrow.SetVelocity(0, 0);
+            Reset();
+            return;
+        }
+
         DirectionX = CalculateDirectionX(PositionX, TargetX);
         DirectionY = CalculateDirectionY(PositionY, TargetY);
 
@@ -112,6 +120,17 @@ public class Seek {
         double Distance = sqrt(pow(DistanceX, 2) + pow(DistanceY, 2));
 
         return Distance <= InfluenceRadius;
+    }
+
+    //Collision
+    public boolean HasReachedTarget() {
+        return Collision.CheckCollision(
+                PositionX,
+                PositionY,
+                TargetX,
+                TargetY,
+                CollisionRadius
+        );
     }
 
     //Limpar os pontos ao reiniciar

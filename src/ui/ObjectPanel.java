@@ -1,10 +1,11 @@
-
 package ui;
 
 import agent.Arrow;
+
 import behaviours.Seek;
 import behaviours.Flee;
 import behaviours.Wander;
+import behaviours.Arrive;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -34,6 +35,7 @@ public class ObjectPanel extends JPanel {
     private final Seek Seek = new Seek(Arrow);
     private final Flee Flee = new Flee(Arrow);
     private final Wander Wander = new Wander(Arrow);
+    private final Arrive Arrive = new Arrive(Arrow);
 
     // Seek
     private int SeekPointX;
@@ -44,6 +46,11 @@ public class ObjectPanel extends JPanel {
     private int FleePointX;
     private int FleePointY;
     private boolean HasFleePoint = false;
+
+    // Arrive
+    private int ArrivePointX;
+    private int ArrivePointY;
+    private boolean HasArrivePoint = false;
 
     private final ArrayList<Point> TrailPoints = new ArrayList<>();
 
@@ -59,6 +66,7 @@ public class ObjectPanel extends JPanel {
             }
         });*/
 
+        //Timers
         LastUpdateTime = System.nanoTime();
 
         Timer Timer = new Timer(UpdateInterval, Event -> {
@@ -69,12 +77,26 @@ public class ObjectPanel extends JPanel {
             if (Flee.GetIsActive() && Flee.IsInsideRadius()) {
                 Flee.Update(DeltaTime);
             }
+            else if (Arrive.GetIsActive()) {
+                Arrive.Update(DeltaTime);
+            }
             else if (Seek.GetIsActive() && Seek.IsInsideRadius()) {
                 Seek.Update(DeltaTime);
             }
             else {
                 Wander.Update(DeltaTime);
             }
+
+            //region Remoção por Collision
+            // Remove o ponto quando o Seek termina
+            if (HasSeekPoint && !Seek.GetIsActive()) {
+                HasSeekPoint = false;
+            }
+            // Remove o ponto quando o Arrive termina
+            if (HasArrivePoint && !Arrive.GetIsActive()) {
+                HasArrivePoint = false;
+            }
+            //endregion
 
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
 
@@ -149,6 +171,33 @@ public class ObjectPanel extends JPanel {
         });
         //endregion
 
+        //region Arrive
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("A"), "CreateArrive"
+        );
+
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("a"), "CreateArrive"
+        );
+
+        getActionMap().put("CreateArrive", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent Event) {
+                Point MousePosition = getMousePosition();
+
+                if (MousePosition != null) {
+                    ArrivePointX = MousePosition.x;
+                    ArrivePointY = MousePosition.y;
+
+                    HasArrivePoint = true;
+                    Arrive.SetTarget(ArrivePointX, ArrivePointY);
+
+                    repaint();
+                }
+            }
+        });
+//endregion
+
         Timer.start();
     }
 
@@ -197,6 +246,12 @@ public class ObjectPanel extends JPanel {
             G2.fillRect(FleePointX - 6, FleePointY - 6, 12, 12);
         }
 
+        // Arrive Draw
+        if (HasArrivePoint) {
+            G2.setColor(Color.MAGENTA);
+            G2.fillRect(ArrivePointX - 6, ArrivePointY - 6, 12, 12);
+        }
+
         // Posiciona e rotaciona o desenho.
         G2.translate(
                 Arrow.GetPositionX(),
@@ -228,12 +283,14 @@ public class ObjectPanel extends JPanel {
         //Bool
         HasSeekPoint = false;
         HasFleePoint = false;
+        HasArrivePoint = false;
 
         //Resets
         Arrow.Reset();
         Seek.Reset();
         Flee.Reset();
         Wander.Reset();
+        Arrive.Reset();
 
         //Clear
         TrailPoints.clear();
