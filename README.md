@@ -124,3 +124,5 @@ Os seguintes materiais foram utilizados como referência para o estudo e desenvo
 - **Wander:** [5.5 Wander Steering Behavior - The Nature of Code](https://www.youtube.com/watch?v=ujsR2vcJlLk)
 - **Collisions:** [AI Steering Behaviors In Godot : Collisions](https://www.youtube.com/watch?v=9oG57rqi64w)
 - **Path Following:** [5.7 Path Following (Steering) - Nature of Code](https://www.youtube.com/watch?v=rlZYT-uvmGQ)
+
+### Inteligência Artificial utilizada para correção de bugs e criação de interface visual.
