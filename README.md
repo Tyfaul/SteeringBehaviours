@@ -1,4 +1,4 @@
-# Steering Behaviors — Simulação de Movimentação Autônoma
+# Steering Behaviors
 
 ## Sobre o projeto
 
