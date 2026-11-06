@@ -21,7 +21,7 @@ public class Seek {
     private double TargetY;
 
     //Velocity
-    private double maxSpeed = 150;
+    private double maxSpeed = 200;
     private double currentVelocityX;
     private double currentVelocityY;
 
@@ -29,12 +29,7 @@ public class Seek {
     private double DirectionX;
     private double DirectionY;
 
-    //private double InfluenceRadius = 150;
-
-    public void setTarget(){
-        this.TargetX = TargetX;
-        this.TargetY = TargetY;
-    }
+    private double InfluenceRadius = 300;
 
     public double CalculateDirectionX(double PositionX, double TargetX){
         return TargetX - PositionX;
@@ -106,7 +101,6 @@ public class Seek {
         return IsActive;
     }
 
-    /*
     //Raio de Influencia
     public boolean IsInsideRadius() {
         PositionX = Arrow.GetPositionX();
@@ -119,7 +113,6 @@ public class Seek {
 
         return Distance <= InfluenceRadius;
     }
-    */
 
     //Limpar os pontos ao reiniciar
     public void Reset() {

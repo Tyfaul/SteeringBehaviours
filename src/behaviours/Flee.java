@@ -21,7 +21,7 @@ public class Flee {
         private double TargetY;
 
         // Velocity
-        private double maxSpeed = 150;
+        private double maxSpeed = 200;
         private double currentVelocityX;
         private double currentVelocityY;
 

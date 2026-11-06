@@ -4,10 +4,10 @@ import agent.Arrow;
     public class Wander {
 
         // Configurações
-        private double maxSpeed = 150;
-        private double WanderRadius = 50;
+        private double maxSpeed = 200;
+        private double WanderRadius = 70;
         private double WanderDistance = 80;
-        private double WanderJitter = 2.0;
+        private double WanderJitter = 10.0; //Variação de ângulo
 
         // Dados do movimento
         private final Arrow Arrow;

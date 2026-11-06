@@ -66,13 +66,14 @@ public class ObjectPanel extends JPanel {
             double DeltaTime = (CurrentTime - LastUpdateTime) / 1_000_000_000.0;
             LastUpdateTime = CurrentTime;
 
-            Wander.Update(DeltaTime); //Atualiza Wander
-
-            if (Seek.GetIsActive()) { //Atualiza Seek
+            if (Flee.GetIsActive() && Flee.IsInsideRadius()) {
+                Flee.Update(DeltaTime);
+            }
+            else if (Seek.GetIsActive() && Seek.IsInsideRadius()) {
                 Seek.Update(DeltaTime);
             }
-            if (Flee.GetIsActive() && Flee.IsInsideRadius()) { //Atualiza Flee
-                Flee.Update(DeltaTime);
+            else {
+                Wander.Update(DeltaTime);
             }
 
             Arrow.Update(DeltaTime, getWidth() - 1, getHeight() - 1);
